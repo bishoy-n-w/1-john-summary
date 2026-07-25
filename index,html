@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>رسالة يوحنا الأولى - رحلة تفاعلية مبهجة</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+
+        :root {
+            /* لوحة ألوان مبهجة وملونة */
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --sidebar-gradient: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+            --text-main: #2b2b2b;
+            --accent-title: #ff4757; /* أحمر وردي مبهج */
+            --accent-subtitle: #1e90ff; /* أزرق مشرق */
+            --verse-bg: #fff9e6; /* أصفر كريمي مبهج للآيات */
+            --verse-border: #ffa502; /* برتقالي ذهبي */
+            --verse-text: #d35400; /* لون قرميدي دافئ للنص الكتابي */
+            --btn-gradient: linear-gradient(45deg, #1dd1a1, #10ac84); /* أخضر نعناعي */
+            --btn-hover: linear-gradient(45deg, #10ac84, #019066);
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* حاوية التطبيق */
+        .app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* زر ملء الشاشة (Emoji فقط وتصميم دائري) */
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: var(--card-bg);
+            color: var(--accent-subtitle);
+            border: 2px solid var(--accent-subtitle);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--accent-subtitle);
+            color: white;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4);
+        }
+
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-gradient);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            color: white;
+            font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-item {
+            padding: 18px 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 700;
+            transition: all 0.3s;
+            border-right: 5px solid transparent;
+            margin-bottom: 5px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding-right: 35px;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.25);
+            color: white;
+            border-right-color: #ffeaa7;
+            padding-right: 30px;
+        }
+
+        /* منطقة المحتوى الرئيسية */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="rgba(0,0,0,0.02)" stroke-width="2" fill="none"/></svg>') center/cover;
+        }
+
+        .chapter {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+        }
+
+        .chapter.active {
+            display: flex;
+        }
+
+        /* رأس الشريحة الثابت (يحتوي على الآيات) */
+        .verse-header {
+            background: var(--verse-bg);
+            border-bottom: 5px solid var(--verse-border);
+            padding: 20px 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            z-index: 20;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .verse-header-title {
+            color: var(--accent-subtitle);
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .verse-header-title::before {
+            content: '📖';
+            margin-left: 8px;
+        }
+
+        .verse-text {
+            font-size: 1.4rem;
+            color: var(--verse-text);
+            line-height: 1.6;
+            margin: 0;
+            font-weight: 700;
+            border-right: 4px solid var(--verse-border);
+            padding-right: 15px;
+        }
+
+        /* منطقة الأجزاء المتغيرة (الشرح والتفسير) */
+        .parts-area {
+            flex: 1;
+            position: relative;
+            perspective: 1500px;
+            overflow: hidden;
+        }
+
+        .part {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            opacity: 0;
+            transform: scale(2) translateZ(500px); 
+            transition: transform 0.9s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.7s ease;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .part.active {
+            opacity: 1;
+            transform: scale(1) translateZ(0);
+            pointer-events: auto;
+            visibility: visible;
+            z-index: 5;
+        }
+
+        .part.passed {
+            opacity: 0;
+            transform: scale(0.4) translateZ(-500px);
+            visibility: hidden;
+            z-index: 1;
+        }
+
+        /* صندوق المحتوى الداخلي */
+        .content-box {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 35px 45px;
+            max-width: 850px;
+            width: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08), 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .content-box::-webkit-scrollbar { width: 8px; }
+        .content-box::-webkit-scrollbar-thumb { background-color: #b2bec3; border-radius: 10px; }
+
+        /* تصميم النصوص داخل الصندوق */
+        .step-subtitle {
+            color: var(--accent-subtitle);
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .step-title {
+            color: var(--accent-title);
+            font-size: 2.4rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 900;
+            position: relative;
+            display: inline-block;
+        }
+
+        .step-title::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 4px;
+            background: var(--accent-subtitle);
+            bottom: -5px;
+            right: 0;
+            border-radius: 2px;
+        }
+
+        p, li {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+        }
+
+        ul, ol { padding-right: 25px; }
+        li { margin-bottom: 12px; }
+        strong { color: var(--accent-title); font-weight: 900;}
+
+        /* زر الانتقال الداخلي */
+        .inner-nav-btn {
+            display: block;
+            margin: 30px auto 5px auto;
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 8px 20px rgba(16, 172, 132, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .inner-nav-btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 25px rgba(16, 172, 132, 0.5);
+        }
+
+        /* التجاوب (الموبايل والتابلت) */
+        @media (max-width: 900px) {
+            .app-container { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 25vh;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+            .sidebar-header { display: none; }
+            .nav-item {
+                white-space: nowrap;
+                border-right: none;
+                border-bottom: 4px solid transparent;
+                padding: 15px 20px;
+            }
+            .nav-item.active {
+                border-right-color: transparent;
+                border-bottom-color: #ffeaa7;
+            }
+            .verse-header { padding: 15px 20px; }
+            .verse-text { font-size: 1.1rem; line-height: 1.5; }
+            .content-box { padding: 25px 20px; border-radius: 15px; }
+            .step-title { font-size: 1.8rem; }
+            p, li { font-size: 1.1rem; }
+            .inner-nav-btn { font-size: 1.1rem; padding: 10px 20px; margin-top: 20px; }
+            .part { padding: 15px; }
+            .fullscreen-btn { width: 38px; height: 38px; font-size: 1.1rem; top: 10px; left: 10px; }
+        }
+
+        @media (max-width: 900px) and (orientation: landscape) {
+            .app-container { flex-direction: row; }
+            .sidebar {
+                width: 220px;
+                max-height: 100vh;
+                flex-direction: column;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            .sidebar-header { display: block; padding: 15px; }
+            .sidebar-header h2 { font-size: 1.5rem; }
+            .nav-item { border-bottom: none; border-right: 4px solid transparent; }
+            .nav-item.active { border-bottom-color: transparent; border-right-color: #ffeaa7; }
+            .verse-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- زر ملء الشاشة - Emoji فقط -->
+    <button id="fullscreenToggle" class="fullscreen-btn" onclick="toggleFullScreen()" title="تبديل وضع ملء الشاشة">⛶</button>
+
+    <div class="app-container">
+        <!-- القائمة الجانبية -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>رسالة يوحنا الأولى</h2>
+            </div>
+            <div class="nav-item active" onclick="goToChapter(0)">1. الخلفية التاريخية</div>
+            <div class="nav-item" onclick="goToChapter(1)">2. مقدمة الرسالة</div>
+            <div class="nav-item" onclick="goToChapter(2)">3. الأصحاح الأول</div>
+            <div class="nav-item" onclick="goToChapter(3)">4. الأصحاح الثاني</div>
+            <div class="nav-item" onclick="goToChapter(4)">5. الأصحاح الثالث</div>
+            <div class="nav-item" onclick="goToChapter(5)">6. الأصحاح الرابع</div>
+            <div class="nav-item" onclick="goToChapter(6)">7. الأصحاح الخامس</div>
+            <div class="nav-item" onclick="goToChapter(7)">8. التطبيق العملي</div>
+        </div>
+
+        <!-- منطقة المحتوى الأساسية -->
+        <div class="main-content">
+
+            <!-- ================= الفصل 0: الخلفية التاريخية ================= -->
+            <div class="chapter active" id="chapter-0">
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">من أين بدأت القصة؟</div>
+                            <h1 class="step-title">الكاتب والزمن</h1>
+                            <p>فهم السياق التاريخي يفك الكثير من شفرات هذه الرسالة العظيمة.</p>
+                            <ul>
+                                <li><strong>الكاتب:</strong> يوحنا الحبيب (أحد تلاميذ المسيح الاثني عشر، وكاتب الإنجيل الرابع وسفر الرؤيا).</li>
+                                <li><strong>تاريخ ومكان الكتابة:</strong> كُتبت تقريباً بين عامي 85 - 95 ميلادياً، من مدينة أفسس (في آسيا الصغرى).</li>
+                            </ul>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">لماذا كُتبت؟ 🔍</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">الخلفية التاريخية</div>
+                            <h1 class="step-title">سبب الكتابة (الدافع)</h1>
+                            <p>في نهاية القرن الأول، ظهرت بدعة خطيرة تُعرف بـ <strong>"الغنوسية" (Gnosticism)</strong>.</p>
+                            <p>ادعى الغنوسيون أن المادة شر والروح صالحة، وبالتالي <strong>رفضوا فكرة أن المسيح أخذ جسداً حقيقياً</strong>، وقالوا أن الخلاص مجرد "معرفة سرية".</p>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">أهداف الرسالة 🎯</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">الخلفية التاريخية</div>
+                            <h1 class="step-title">هدف الرسالة</h1>
+                            <ol>
+                                <li>الرد الحاسم على هذه الهرطقات وإثبات <strong>تجسد المسيح الحقيقي</strong>.</li>
+                                <li>طمأنة المؤمنين وإعطائهم <strong>" يقين الخلاص"</strong> ..... <strong>"كَتَبْتُ هَذَا إِلَيْكُمْ، أَنْتُمُ الْمُؤْمِنِينَ بِاسْمِ ابْنِ اللهِ، لِكَيْ تَعْلَمُوا أَنَّ لَكُمْ حَيَاةً أَبَدِيَّةً، وَلِكَيْ تُؤْمِنُوا بِاسْمِ ابْنِ اللهِ." (1 يو 5: 13)."</strong>.</li>
+                                <li>التأكيد على أن الإيمان الحقيقي يظهر عملياً في <strong>الطهارة ومحبة الإخوة</strong>.</li>
+                            </ol>
+                            <button class="inner-nav-btn" onclick="goToChapter(1)">هيا نبدأ الرحلة في الرسالة 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 1: مقدمة الرسالة ================= -->
+            <div class="chapter" id="chapter-1">
+                <div class="verse-header">
+                    <div class="verse-header-title">مقدمة الرسالة (1 يو 1: 1-4)</div>
+                    <blockquote class="verse-text">
+                        "اَلَّذِي كَانَ مِنَ الْبَدْءِ، الَّذِي سَمِعْنَاهُ، الَّذِي رَأَيْنَاهُ بِعُيُونِنَا، الَّذِي تَأَمَّلْنَاهُ، وَلَمَسَتْهُ أَيْدِينَا، مِنْ جِهَةِ كَلِمَةِ الْحَيَاةِ... الَّذِي رَأَيْنَاهُ وَسَمِعْنَاهُ نُخْبِرُكُمْ بِهِ، لِكَيْ يَكُونَ لَكُمْ أَيْضاً شَرِكَةٌ مَعَنَا."
+                    </blockquote>
+                </div>
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">الرد المباشر على البدع</div>
+                            <h1 class="step-title">الشرح والتفسير</h1>
+                            <ul>
+                                <li><strong>حواس الإدراك المادي:</strong> يضرب يوحنا هرطقة الغنوسيين في مقتل مؤكداً: "نحن لم نتبع وهماً أو طيفاً روحياً، بل تعاملنا مع جسد حقيقي (سمعناه، رأيناه، لمسته أيدينا)".</li>
+                                <li><strong>الشركة (Fellowship):</strong> تعني المشاركة العميقة والاتحاد. الكرازة ليست نقل معلومات بل إدخال الآخرين في الدائرة الإلهية للشركة.</li>
+                            </ul>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">اكتشف العمق الروحي ✨</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">مقدمة الرسالة</div>
+                            <h1 class="step-title">العمق الروحي</h1>
+                            <p>المسيحية ليست مجرد عقيدة أو فلسفة تُدرس، بل هي <strong>اختبار يُعاش</strong>.</p>
+                            <p>الله لم يعد فكرة فلسفية بعيدة في السماء، بل نزل إلى واقعنا المادي ليرفعنا لواقعه الروحي، وهذا ما يجعل "الفرح كاملاً" لأننا لم نعد متروكين وحدنا.</p>
+                            <button class="inner-nav-btn" onclick="goToChapter(2)">للأصحاح الأول 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 2: الأصحاح الأول ================= -->
+            <div class="chapter" id="chapter-2">
+                <div class="verse-header">
+                    <div class="verse-header-title">الأصحاح الأول (1 يو 1: 7-9)</div>
+                    <blockquote class="verse-text">
+                        "وَلَكِنْ إِنْ سَلَكْنَا فِي النُّورِ كَمَا هُوَ فِي النُّورِ، فَلَنَا شَرِكَةٌ بَعْضِنَا مَعَ بَعْضٍ، وَدَمُ يَسُوعَ الْمَسِيحِ ابْنِهِ يُطَهِّرُنَا مِنْ كُلِّ خَطِيَّةٍ... إِنِ اعْتَرَفْنَا بِخَطَايَانَا فَهُوَ أَمِينٌ وَعَادِلٌ، حَتَّى يَغْفِرَ لَنَا..."
+                    </blockquote>
+                </div>
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">التجسد الإلهي وسر الاعتراف والتناول</div>
+                            <h1 class="step-title">تفسير الآباء</h1>
+                            <p>ترى الكنيسة القبطية في هذا الأصحاح تأسيساً جلياً للأسرار الكنسية.</p>
+                            <p><strong>"الشركة"</strong> هنا ليست مجرد صداقة، بل هي التناول من جسد الرب ودمه (ينبوع التطهير المستمر). أما الاعتراف، فيتضمن بحسب التقليد الآبائي الاعتراف أمام الله في حضور الكاهن لنوال الحِل.</p>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">العمق الروحي ✨</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">الأصحاح الأول</div>
+                            <h1 class="step-title">العمق الروحي</h1>
+                            <p>الحياة المسيحية تتميز بـ <strong>"التوبة المستمرة" (الميطانيا)</strong>.</p>
+                            <p>يعلمنا القديس أغسطينوس أن مسيحيتنا لا تعني أننا بلا خطية، بل أننا نركض دائماً نحو "النور" لنكشف جراحاتنا لطبيب النفوس الحقيقي لكي يشفينا بدمه.</p>
+                            <button class="inner-nav-btn" onclick="goToChapter(3)">للأصحاح الثاني 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 3: الأصحاح الثاني ================= -->
+            <div class="chapter" id="chapter-3">
+                <div class="verse-header">
+                    <div class="verse-header-title">الأصحاح الثاني (1 يو 2: 1-2، 15)</div>
+                    <blockquote class="verse-text">
+                        "يَا أَوْلاَدِي، أَكْتُبُ إِلَيْكُمْ هَذَا لِكَيْ لاَ تُخْطِئُوا. وَإِنْ أَخْطَأَ أَحَدٌ فَلَنَا شَفِيعٌ عِنْدَ الآبِ، يَسُوعُ الْمَسِيحُ الْبَارُّ... لاَ تُحِبُّوا الْعَالَمَ وَلاَ الأَشْيَاءَ الَّتِي فِي الْعَالَمِ."
+                    </blockquote>
+                </div>
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">المسيح الشفيع ورفض محبة العالم</div>
+                            <h1 class="step-title">تفسير الآباء والعمق الروحي</h1>
+                            <p>يؤكد القديس كيرلس الكبير أن شفاعة المسيح هي <strong>"شفاعة كفارية"</strong>.</p>
+                            <p>وتبرز هنا الروح النسكية: القلب البشري لا يتسع لمحبتين (محبة الله ومحبة العالم كمنظومة شهوات). لكي تمتلئ من الله، يجب إفراغ القلب من شهوة الجسد، وشهوة العيون، وتعظم المعيشة.</p>
+                            <button class="inner-nav-btn" onclick="goToChapter(4)">للأصحاح الثالث 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 4: الأصحاح الثالث ================= -->
+            <div class="chapter" id="chapter-4">
+                <div class="verse-header">
+                    <div class="verse-header-title">الأصحاح الثالث (1 يو 3: 1-2)</div>
+                    <blockquote class="verse-text">
+                        "أُنْظُرُوا أَيَّةَ مَحَبَّةٍ أَعْطَانَا الآبُ حَتَّى نُدْعَى أَوْلاَدَ اللهِ!... أَيُّهَا الأَحِبَّاءُ، الآنَ نَحْنُ أَوْلاَدُ اللهِ، وَلَمْ يُظْهَرْ بَعْدُ مَاذَا سَنَكُونُ."
+                    </blockquote>
+                </div>
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">سر التبني والمحبة العملية</div>
+                            <h1 class="step-title">تفسير الآباء</h1>
+                            <p>يلمس الأصحاح قلب اللاهوت الأرثوذكسي: <strong>"صار الله إنساناً لكي يصير الإنسان إلهاً"</strong> (نتأله بالنعمة ونصير أبناء بالتبني عبر المعمودية).</p>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">العمق الروحي ✨</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">الأصحاح الثالث</div>
+                            <h1 class="step-title">طبيعة جديدة</h1>
+                            <p>بما أننا صرنا أبناء، فالطبيعة الجديدة تأبى الخطية وتشمئز منها.</p>
+                            <p>العلامة الحقيقية والأكيدة لهذه البنوة هي محبة الإخوة، وكما يقول يوحنا لاحقاً في نفس الأصحاح: <strong>"ليس بالكلام ولا باللسان بل بالعمل والحق"</strong>.</p>
+                            <button class="inner-nav-btn" onclick="goToChapter(5)">للأصحاح الرابع (ذروة الرسالة) 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 5: الأصحاح الرابع ================= -->
+            <div class="chapter" id="chapter-5">
+                <div class="verse-header">
+                    <div class="verse-header-title">الأصحاح الرابع - ذروة الرسالة (1 يو 4: 8-9)</div>
+                    <blockquote class="verse-text">
+                        "وَمَنْ لاَ يُحِبُّ لَمْ يَعْرِفِ اللهَ، لأَنَّ اللهَ مَحَبَّةٌ. بِهَذَا أُظْهِرَتْ مَحَبَّةُ اللهِ فِينَا: أَنَّ اللهَ قَدْ أَرْسَلَ ابْنَهُ الْوَحِيدَ كَفَّارَةً لِخَطَايَانَا."
+                    </blockquote>
+                </div>
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">الدوجما والمحبة: التجسد كمعيار</div>
+                            <h1 class="step-title">عقيدة المحبة</h1>
+                            <p>استخدم الآباء هذه الآيات بقوة لإثبات حقيقة التجسد (الدوجما).</p>
+                            <p>تعريف <strong>"الله محبة"</strong> ليس وصفاً لمجرد شعور أو لرد فعل، بل هو إعلان عن جوهر طبيعته؛ إنها محبة باذلة مضحية (Agape).</p>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">العمق الروحي ✨</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">الأصحاح الرابع</div>
+                            <h1 class="step-title">لا أرثوذكسية بلا محبة</h1>
+                            <p>يربط يوحنا بعبقرية بين "العقيدة المستقيمة" و"السلوك المستقيم".</p>
+                            <p><strong>فلا توجد أرثوذكسية (إيمان مستقيم) بدون محبة باذلة.</strong> الخطية الأصعب التي تحذر منها الرسالة هي ادعاء النور بينما القلب يعيش في كراهية وظلمة تجاه الأخ.</p>
+                            <button class="inner-nav-btn" onclick="goToChapter(6)">للأصحاح الخامس 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 6: الأصحاح الخامس ================= -->
+            <div class="chapter" id="chapter-6">
+                <div class="verse-header">
+                    <div class="verse-header-title">الأصحاح الخامس (1 يو 5: 4، 12)</div>
+                    <blockquote class="verse-text">
+                        "لأَنَّ كُلَّ مَنْ وُلِدَ مِنَ اللهِ يَغْلِبُ الْعَالَمَ. وَهَذِهِ هِيَ الْغَلَبَةُ الَّتِي تَغْلِبُ الْعَالَمَ: إِيمَانُنَا... مَنْ لَهُ الابْنُ فَلَهُ الْحَيَاةُ."
+                    </blockquote>
+                </div>
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">الإيمان الغالب والحياة الأبدية</div>
+                            <h1 class="step-title">من له الابن فله الحياة</h1>
+                            <p>الحياة الأبدية في المفهوم الأرثوذكسي ليست مجرد "مكان" نذهب إليه بعد الموت، بل <strong>"شخص" نتحد به الآن</strong>.</p>
+                            <p>هذا يتجلى في القداس الإلهي بوضوح: "يُعطى عنا خلاصاً وغفراناً للخطايا وحياة أبدية لمن يتناول منه".</p>
+                            <button class="inner-nav-btn" onclick="nextPart(this)">سر الغلبة ✨</button>
+                        </div>
+                    </div>
+                    <div class="part">
+                        <div class="content-box">
+                            <div class="step-subtitle">الأصحاح الخامس</div>
+                            <h1 class="step-title">إيماننا الغالب</h1>
+                            <p>الغلبة على حروب الشياطين، وعلى ضعف الجسد، وعلى إغراءات العالم لا تأتي بجهد بشري ذاتي.</p>
+                            <p>الانتصار الحقيقي يأتي <strong>"بإيماننا"</strong>؛ إيماننا العملي بأن المسيح يحيا فينا وأن روحنا تتغذى على جسده وتتحصن بدمه.</p>
+                            <button class="inner-nav-btn" onclick="goToChapter(7)">الخلاصة والتطبيق 🚀</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= الفصل 7: التطبيق العملي ================= -->
+            <div class="chapter" id="chapter-7">
+                <div class="parts-area">
+                    <div class="part active">
+                        <div class="content-box">
+                            <div class="step-subtitle">خلاصات روحية تُعاش اليوم</div>
+                            <h1 class="step-title">التطبيق العملي للرسالة</h1>
+                            <ul>
+                                <li><strong>السلوك في النور:</strong> النور يفضح العيوب. السير في النور يعني الشفافية والصدق مع الله ومع النفس، واللجوء الدائم لسر الاعتراف.</li>
+                                <li><strong>يقين الخلاص:</strong> إرادة يوحنا أن يعيش المؤمن مطمئناً فرحاً، لا في رعب مستمر من فقدان أبديته، طالما هو ثابت في المسيح والمحبة.</li>
+                                <li><strong>غلبة العالم:</strong> تحذير صريح من العالم الشرير. العالم يزول وشهوته معه، أما من يصنع مشيئة الله فيثبت إلى الأبد.</li>
+                            </ul>
+                            <button class="inner-nav-btn" onclick="goToChapter(0)">إعادة الرحلة من البداية 🔄</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentChapterIndex = 0;
+        let isAnimating = false;
+        
+        // جلب العناصر
+        const chapters = document.querySelectorAll('.chapter');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        // تحديث القائمة الجانبية
+        function updateSidebar() {
+            navItems.forEach((item, index) => {
+                if(index === currentChapterIndex) {
+                    item.classList.add('active');
+                    item.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // الانتقال لفصل جديد
+        function goToChapter(index) {
+            if (isAnimating || index === currentChapterIndex) {
+                if (index === currentChapterIndex) resetChapterParts(chapters[currentChapterIndex]);
+                return;
+            }
+            
+            isAnimating = true;
+            const currentChapter = chapters[currentChapterIndex];
+            const nextChapter = chapters[index];
+
+            currentChapter.classList.remove('active');
+            nextChapter.classList.add('active');
+            
+            resetChapterParts(nextChapter);
+
+            currentChapterIndex = index;
+            updateSidebar();
+            
+            setTimeout(() => { isAnimating = false; }, 300);
+        }
+
+        // إعادة تعيين الأجزاء (Parts) داخل الفصل
+        function resetChapterParts(chapterElement) {
+            const parts = chapterElement.querySelectorAll('.part');
+            parts.forEach((part, idx) => {
+                part.classList.remove('active', 'passed');
+                if(idx === 0) {
+                    part.classList.add('active');
+                }
+                const contentBox = part.querySelector('.content-box');
+                if(contentBox) contentBox.scrollTop = 0;
+            });
+        }
+
+        // الانتقال للجزء التالي داخل نفس الفصل (Zoom Animation)
+        function nextPart(buttonElement) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const currentPart = buttonElement.closest('.part');
+            const nextPart = currentPart.nextElementSibling;
+
+            if (nextPart && nextPart.classList.contains('part')) {
+                currentPart.classList.remove('active');
+                currentPart.classList.add('passed');
+                
+                nextPart.classList.add('active');
+                
+                const contentBox = nextPart.querySelector('.content-box');
+                if(contentBox) contentBox.scrollTop = 0;
+
+                setTimeout(() => { isAnimating = false; }, 900);
+            }
+        }
+
+        // وظيفة ملء الشاشة مع تغيير الأيقونة
+        function toggleFullScreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+            const btn = document.getElementById('fullscreenToggle');
+
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+            if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+                btn.innerHTML = "🗗"; // أيقونة تصغير الشاشة
+            } else {
+                cancelFullScreen.call(doc);
+                btn.innerHTML = "⛶"; // أيقونة ملء الشاشة
+            }
+        }
+
+        // استشعار الخروج من وضع ملء الشاشة (مثلاً عن طريق زر Esc)
+        document.addEventListener('fullscreenchange', exitHandler);
+        document.addEventListener('webkitfullscreenchange', exitHandler);
+        document.addEventListener('mozfullscreenchange', exitHandler);
+        document.addEventListener('MSFullscreenChange', exitHandler);
+
+        function exitHandler() {
+            const btn = document.getElementById('fullscreenToggle');
+            if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+                btn.innerHTML = "⛶";
+            }
+        }
+
+        // تهيئة البداية
+        updateSidebar();
+        resetChapterParts(chapters[0]);
+    </script>
+</body>
+</html>
